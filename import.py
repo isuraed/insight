@@ -1,13 +1,27 @@
-import datetime
 import gzip
-import locale
+import logging
 import os
 import sys
-import time
+
+def init_logging():
+    rootlogger = logging.getLogger()
+    logformatter = logging.Formatter("%(asctime)s [%(levelname)s]  %(message)s")
+
+    filehandler = logging.FileHandler("import.log")
+    filehandler.setFormatter(logformatter)
+    rootlogger.addHandler(filehandler)
+
+    consolehandler = logging.StreamHandler()
+    consolehandler.setFormatter(logformatter)
+    rootlogger.addHandler(consolehandler)
+    
+    rootlogger.setLevel(logging.DEBUG)
+
 
 def parse(filename):
-    infile = gzip.open(filename, 'r')
     record = []
+    infile = gzip.open(filename, 'r')
+
     for line in infile:
         line = line.strip()
         colonpos = line.find(':')
@@ -19,30 +33,33 @@ def parse(filename):
         # '\' in data will wreck havoc with '\t' delimiters.
         val = val.replace('\\', '')
         record.append(val)
+
     infile.close()
     yield record
 
 
 def main():
+    init_logging()
+
+    hdfspath = "data/in/reviews"
     recordcount = 0
     filecount = 1
     filename = '{0:04d}'.format(filecount)
     currfile = open(filename + '.tab', 'w')
 
-    for record in parse(sys.argv[1]):
+    for row, record in enumerate(parse(sys.argv[1])):
         if record:
             if len(record) != 10:
-                print(str(len(record)) + " is an invalid # of columns.")
+                logging.warning("Skipping record " + str(row) + " because an invalid number of columns were found.")
                 continue
 
             currfile.write('\t'.join(record) + '\n')
             recordcount += 1
             if (recordcount % 100000 == 0):
                 currfile.close()
-                os.system("hdfs dfs -put " + currfile.name + " isura/in/reviews")
-                os.remove(currfile.name)
-
-                print("Processed " + str(recordcount) + " records.")
+                os.system("hdfs dfs -put " + currfile.name + " " + hdfspath)
+                logging.info("Put " + currfile.name + " into HDFS at location " + hdfspath + ".")
+                logging.info("Total records written is " + str(recordcount) + ".")
 
                 filecount += 1
                 filename = '{0:04d}'.format(filecount)
@@ -50,7 +67,7 @@ def main():
 
     currfile.close()
     os.remove(currfile.name)
-    print("Done. Total record count is " + str(recordcount) + ".")
+    logging.info("Done! Wrote " + str(recordcount) + " records in " + str(filecount) + " files.")
 
 
 if __name__ == '__main__':
