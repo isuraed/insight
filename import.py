@@ -60,6 +60,7 @@ def main():
                 os.system("hdfs dfs -put " + currfile.name + " " + hdfspath)
                 logging.info("Put " + currfile.name + " into HDFS at location " + hdfspath + ".")
                 logging.info("Total records written is " + str(recordcount) + ".")
+                os.remove(currfile.name)
 
                 filecount += 1
                 filename = '{0:04d}'.format(filecount)
