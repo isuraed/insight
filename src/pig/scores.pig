@@ -1,4 +1,4 @@
-REGISTER '../../lib/piggybank-0.12.0.jar';
+REGISTER 'lib/piggybank-0.12.0.jar';
 
 DEFINE ISOToDay org.apache.pig.piggybank.evaluation.datetime.truncate.ISOToDay();
 DEFINE UnixToISO org.apache.pig.piggybank.evaluation.datetime.convert.UnixToISO();
