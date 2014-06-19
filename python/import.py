@@ -41,7 +41,7 @@ def parse(filename):
 def main():
     init_logging()
 
-    hdfspath = "data/in/reviews"
+    hdfspath = "in/reviews"
     recordcount = 0
     filecount = 1
     filename = '{0:04d}'.format(filecount)
