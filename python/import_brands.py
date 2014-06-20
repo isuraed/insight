@@ -20,7 +20,7 @@ def main():
         # strip() to remove newline.
         brand = line[delim_pos+1:].strip()
         if product and brand:
-            output_file.write(product + '\t' + brand)
+            output_file.write(product + '\t' + brand + '\n')
             record_count += 1
         else:
             logging.info("Line " + str(idx + 1) + " was skipped.")
