@@ -15,7 +15,7 @@ public class AveragesReducer extends Reducer<Text, Text, Text, Text> {
         for (Text val : values) {
             String[] pair = val.toString().split("\t");
             long time = Long.parseLong(pair[0]);
-            long score = Long.parseLong(pair[1]);
+            int score = Integer.parseInt(pair[1]);
             scores.add(new TimeAndScore(time, score));
         }
 
@@ -29,7 +29,7 @@ public class AveragesReducer extends Reducer<Text, Text, Text, Text> {
             double average = total / n;
 
             Text outputValue = new Text();
-            outputValue.set(pair.getTime() + "\t" + average);
+            outputValue.set(pair.getTime() + "\t" + pair.getScore() + "\t" + average);
             context.write(key, outputValue);
         }
     }

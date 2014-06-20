@@ -1,8 +1,8 @@
 public class TimeAndScore implements Comparable<TimeAndScore> {
     private final long time;
-    private final long score;
+    private final int score;
 
-    public TimeAndScore(long time, long score) {
+    public TimeAndScore(long time, int score) {
         this.time = time;
         this.score = score;
     }
@@ -11,7 +11,7 @@ public class TimeAndScore implements Comparable<TimeAndScore> {
         return time;
     }
 
-    public long getScore() {
+    public int getScore() {
         return score;
     }
 
