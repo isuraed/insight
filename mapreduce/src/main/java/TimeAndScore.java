@@ -20,6 +20,6 @@ public class TimeAndScore implements Comparable<TimeAndScore> {
     }
 
     public String toString() {
-        return time + "\t" + score;
+        return time + "," + score;
     }
 }

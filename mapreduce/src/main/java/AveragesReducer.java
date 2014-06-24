@@ -13,7 +13,7 @@ public class AveragesReducer extends Reducer<Text, Text, Text, Text> {
         List<TimeAndScore> scores = new ArrayList<TimeAndScore>();
 
         for (Text val : values) {
-            String[] pair = val.toString().split("\t");
+            String[] pair = val.toString().split(",");
             long time = Long.parseLong(pair[0]);
             int score = Integer.parseInt(pair[1]);
             scores.add(new TimeAndScore(time, score));

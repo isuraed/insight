@@ -6,7 +6,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 public class AveragesMapper extends Mapper<LongWritable,Text,Text,Text> {
 
-    public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
+    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String[] row = value.toString().split("\t");
 
         String productId = row[0];
