@@ -9,7 +9,6 @@ fields terminated by '\t'
 stored as textfile
 location '${hiveconf:path}';
 
-
 create table isura_brand_metrics(brand string, review_count int, average_score float)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf1:review_count,cf1:average_score")
