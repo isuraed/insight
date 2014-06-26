@@ -32,6 +32,8 @@ def parse(filename):
         val = line[colonpos+1:].strip()
         # '\' in data will wreck havoc with '\t' delimiters.
         val = val.replace('\\', '')
+        # Escape quotes because the text will be stored in json at some point.
+        val = val.replace('"', '\\"')
         record.append(val)
 
     infile.close()
@@ -41,7 +43,7 @@ def parse(filename):
 def main():
     init_logging()
 
-    hdfspath = "in/reviews"
+    hdfspath = argv[2]
     recordcount = 0
     filecount = 1
     filename = '{0:04d}'.format(filecount)
