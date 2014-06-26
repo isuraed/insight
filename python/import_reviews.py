@@ -43,7 +43,7 @@ def parse(filename):
 def main():
     init_logging()
 
-    hdfspath = argv[2]
+    hdfspath = sys.argv[2]
     recordcount = 0
     filecount = 1
     filename = '{0:04d}'.format(filecount)
