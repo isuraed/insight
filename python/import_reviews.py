@@ -32,8 +32,6 @@ def parse(filename):
         val = line[colonpos+1:].strip()
         # '\' in data will wreck havoc with '\t' delimiters.
         val = val.replace('\\', '')
-        # Escape quotes because the text will be stored in json at some point.
-        val = val.replace('"', '\\"')
         record.append(val)
 
     infile.close()
