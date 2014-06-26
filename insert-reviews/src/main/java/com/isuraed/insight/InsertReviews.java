@@ -45,18 +45,16 @@ public class InsertReviews {
             String title = values[0];
             String productId = values[1];
             String userId = values[2];
-            long timestamp = Long.parseLong(values[3]);
-            float score = Float.parseFloat(values[4]);
-            float averageScore = Float.parseFloat(values[5]);
-            String text = values[6];
+            String text = values[3];
+            long timestamp = Long.parseLong(values[4]);
+            float score = Float.parseFloat(values[5]);
 
             JSONObject json = new JSONObject();
             json.put("productId", productId);
             json.put("userId", userId);
+            json.put("text", text);
             json.put("timestamp", timestamp);
             json.put("score", score);
-            json.put("average", averageScore);
-            json.put("text", text);
 
             byte[] rowKey = Bytes.toBytes(title);
             byte[] colKey = Bytes.toBytes(timestamp + "_" + userId);
