@@ -12,7 +12,9 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class InsertReviews {
 
@@ -37,36 +39,27 @@ public class InsertReviews {
 
                 String line = reader.readLine();
                 while (line != null) {
-                    String[] values = line.split("\t", -1);
-                    String title = values[0];
-                    String productId = values[1];
-                    String userId = values[2];
-                    String text = values[3];
-                    long timestamp = Long.parseLong(values[4]);
-                    float score = Float.parseFloat(values[5]);
+                    String[] row = line.split("\t", -1);
+                    byte[] rowKey = Bytes.toBytes(row[0]);
+                    Object obj =JSONValue.parse(row[1]);
+                    JSONArray jsonList = (JSONArray)obj;
 
-                    JSONObject json = new JSONObject();
-                    json.put("productId", productId);
-                    json.put("userId", userId);
-                    json.put("text", text);
-                    json.put("timestamp", timestamp);
-                    json.put("score", score);
+                    Put put = new Put(rowKey);
 
-                    if (title.length() > 0) {
-                        byte[] rowKey = Bytes.toBytes(title);
+                    for (int j = 0; j < jsonList.size(); j++) {
+                        JSONObject jsonObj = (JSONObject)jsonList.get(j);
+
+                        long timestamp = (Long)jsonObj.get("timestamp");
+                        String userId = (String)jsonObj.get("userId");
                         byte[] colKey = Bytes.toBytes(timestamp + "_" + userId);
-                        byte[] colValue = Bytes.toBytes(json.toJSONString());
+                        byte[] colValue = Bytes.toBytes(jsonObj.toJSONString());
 
-                        Put put = new Put(rowKey);
                         put.add(Bytes.toBytes("cf1"), colKey, colValue);
-                        htable.put(put);
                     }
+
+                    htable.put(put);
 
                     line = reader.readLine();
-
-                    if (i % 10000 == 0) {
-                        System.out.println("Wrote record " + i);
-                    }
                 }
             }
         } catch (Exception e) {
