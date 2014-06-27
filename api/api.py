@@ -1,11 +1,12 @@
 #!flask/bin/python
 from flask import abort, Flask, jsonify
 import happybase
+import json
 
 app = Flask(__name__)
 connection = happybase.Connection('54.183.87.221')
 
-@app.route('/api/v0.1/brand_metrics', methods = ['GET'])
+@app.route('/pi/v0.1/brand_metrics', methods = ['GET'])
 def get_brand_metrics():
     results = []
     table = connection.table('isura_brand_metrics')
@@ -25,6 +26,22 @@ def get_brand_metrics_for(brand):
     if not row:
         abort(404)
     return jsonify( { 'brand_metrics' : row[0] } )
+
+
+@app.route('/api/v0.1/reviews/<string:product>', methods = ['GET'])
+def get_review_for(product):
+    print product
+    table = connection.table('isura_reviews')
+    row = table.row(product)
+    reviews = []
+    if not row:
+        abort(404)
+    for key, val in row.iteritems():
+        jsonval = json.loads(val)
+        jsonval['product'] = product
+        reviews.append(jsonval)
+    reviews = sorted(reviews, key=lambda k: k['timestamp'])
+    return jsonify( { 'reviews' : reviews } )
 
 
 if __name__ == '__main__':
