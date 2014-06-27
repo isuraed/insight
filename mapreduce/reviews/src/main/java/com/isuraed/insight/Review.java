@@ -9,15 +9,15 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class TransformReviews {
+public class Review {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job = new Job(conf, "isura_transform-reviews");
+        Job job = new Job(conf, "isura_map-reviews");
 
-        job.setJarByClass(TransformReviews.class);
-        job.setMapperClass(TransformReviewsMapper.class);
-        job.setReducerClass(TransformReviewsReducer.class);
+        job.setJarByClass(Review.class);
+        job.setMapperClass(ReviewMapper.class);
+        job.setNumReduceTasks(0);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
