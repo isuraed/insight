@@ -25,6 +25,8 @@ sourceSets {
 ext.hadoopVersion = "2.3.0-mr1-cdh5.0.1"
 dependencies {
     provided "org.apache.hadoop:hadoop-client:${hadoopVersion}"
+
+    compile "com.googlecode.json-simple:json-simple:1.1.1"
 }
 
 // Java version selection

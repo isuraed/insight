@@ -8,6 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 //import org.apache.log4j.Logger;
 
+// The mapper is responsible for projecting the required columns and skipping bad records.
 public class ReviewMapper extends Mapper<LongWritable,Text,Text,Text> {
     private static final Logger logger = Logger.getLogger(ReviewMapper.class.getName());
 
@@ -27,21 +28,17 @@ public class ReviewMapper extends Mapper<LongWritable,Text,Text,Text> {
         long time = Long.parseLong(rowValues[7]);
         String text = rowValues[9];
 
-        if (userId.equalsIgnoreCase("unknown")) {
-
-            logger.info("Skipped record: userId is unknown.");
-            return;
-        }
+        if (title.equals("")) return;
+        if (text.equals("")) return;
+        if (userId.equalsIgnoreCase("unknown")) return;
 
         // Escape quotes because strings are stored in json later.
         title = title.replace("\"", "\\\"");
         text = text.replace("\"", "\\\"");
 
         StringBuilder outputValues = new StringBuilder();
-        outputValues.append(productId);
-        outputValues.append("\t");
-        outputValues.append(userId);
-        outputValues.append("\t");
+        outputValues.append(productId + "\t");
+        outputValues.append(userId + "\t");
         outputValues.append(text);
         outputValues.append("\t");
         outputValues.append(time);

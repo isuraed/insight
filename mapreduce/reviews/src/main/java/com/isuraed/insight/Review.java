@@ -9,6 +9,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 public class Review {
 
     public static void main(String[] args) throws Exception {
@@ -17,7 +20,7 @@ public class Review {
 
         job.setJarByClass(Review.class);
         job.setMapperClass(ReviewMapper.class);
-        job.setNumReduceTasks(0);
+        job.setReducerClass(ReviewReducer.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
