@@ -1,12 +1,11 @@
 package com.isuraed.insight;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 // The mapper is responsible for projecting the required columns and skipping bad records.
 public class ReviewMapper extends Mapper<LongWritable,Text,Text,Text> {
@@ -17,7 +16,7 @@ public class ReviewMapper extends Mapper<LongWritable,Text,Text,Text> {
         String[] rowValues = value.toString().split("\t", -1);
 
         if (rowValues.length != 10) {
-            logger.warning("Skipped record: Wrong number of columns. Expected=10, Receieved=" + rowValues.length + ".");
+            logger.warn("Skipped record: Wrong number of columns. Expected=10, Receieved=" + rowValues.length + ".");
             return;
         }
 
@@ -28,15 +27,28 @@ public class ReviewMapper extends Mapper<LongWritable,Text,Text,Text> {
         long time = Long.parseLong(rowValues[7]);
         String text = rowValues[9];
 
-        if (title.equals("")) return;
-        if (text.equals("")) return;
-        if (userId.equalsIgnoreCase("unknown")) return;
+        if (title.equals("")) {
+            logger.info("Skipped record: Blank title.");
+            return;
+        }
+        if (text.equals("")) {
+            logger.info("Skipped record: Blank text.");
+            return;
+        }
+        if (userId.equalsIgnoreCase("unknown")) {
+            // Don't log these because unknown is very common.
+            return;
+        }
 
         // Escape quotes because strings are stored in json later.
         title = title.replace("\"", "\\\"");
         text = text.replace("\"", "\\\"");
 
+        // Store the key as lowercase for easier searching.
+        String titleKey = title.toLowerCase();
+
         StringBuilder outputValues = new StringBuilder();
+        outputValues.append(title + "\t");
         outputValues.append(productId + "\t");
         outputValues.append(userId + "\t");
         outputValues.append(text);
@@ -45,6 +57,6 @@ public class ReviewMapper extends Mapper<LongWritable,Text,Text,Text> {
         outputValues.append("\t");
         outputValues.append(score);
 
-        context.write(new Text(title), new Text(outputValues.toString()));
+        context.write(new Text(titleKey), new Text(outputValues.toString()));
     }
 }

@@ -19,13 +19,15 @@ public class ReviewReducer extends Reducer<Text, Text, Text, Text> {
         for (Text val : values) {
             String[] rowValues = val.toString().split("\t", -1);
 
-            String productId = rowValues[0];
-            String userId = rowValues[1];
-            String text = rowValues[2];
-            long timestamp = Long.parseLong(rowValues[3]);
-            float score = Float.parseFloat(rowValues[4]);
+            String title = rowValues[0];
+            String productId = rowValues[1];
+            String userId = rowValues[2];
+            String text = rowValues[3];
+            long timestamp = Long.parseLong(rowValues[4]);
+            float score = Float.parseFloat(rowValues[5]);
 
             JSONObject jsonObj = new JSONObject();
+            jsonObj.put("title", title);
             jsonObj.put("productId", productId);
             jsonObj.put("userId", userId);
             jsonObj.put("text", text);
