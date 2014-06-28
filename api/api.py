@@ -2,11 +2,14 @@
 from flask import abort, Flask, jsonify
 import happybase
 import json
+import time
+
+API_VERSION = 'v0.2'
 
 app = Flask(__name__)
 connection = happybase.Connection('54.183.87.221')
 
-@app.route('/pi/v0.1/brand_metrics', methods = ['GET'])
+@app.route('/api/' + API_VERSION + '/brand_metrics', methods = ['GET'])
 def get_brand_metrics():
     results = []
     table = connection.table('isura_brand_metrics')
@@ -19,7 +22,7 @@ def get_brand_metrics():
     return jsonify( { 'brand_metrics' : results } )
 
 
-@app.route('/api/v0.1/brand_metrics/<string:brand>', methods = ['GET'])
+@app.route('/api/' + API_VERSION + '/brand_metrics/<string:brand>', methods = ['GET'])
 def get_brand_metrics_for(brand):
     table = connection.table('isura_brand_metrics')
     row = [r for r in table.scan() if r[0] == brand]
@@ -28,9 +31,9 @@ def get_brand_metrics_for(brand):
     return jsonify( { 'brand_metrics' : row[0] } )
 
 
-@app.route('/api/v0.1/reviews/<string:product>', methods = ['GET'])
+@app.route('/api/' + API_VERSION + '/reviews/<string:product>', methods = ['GET'])
 def get_review_for(product):
-    print product
+    start = time.time()
     table = connection.table('isura_reviews')
     row = table.row(product)
     reviews = []
@@ -41,7 +44,9 @@ def get_review_for(product):
         jsonval['product'] = product
         reviews.append(jsonval)
     reviews = sorted(reviews, key=lambda k: k['timestamp'])
-    return jsonify( { 'reviews' : reviews } )
+    reviews = { 'reviews' : reviews }
+    reviews['meta'] = { 'count' : len(row), 'responseTime' : time.time() - start }
+    return jsonify(reviews)
 
 
 if __name__ == '__main__':
