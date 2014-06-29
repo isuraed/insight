@@ -20,7 +20,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class InsertReviews {
+public class ReviewInserter {
 
     // Insert records into HBase reviews table from all files in the specified HDFS folder. Input path is the full
     // hdfs path including hostname - i.e. hdfs://hostname:9000/path/to/files.
@@ -30,7 +30,7 @@ public class InsertReviews {
             System.exit(1);
         }
 
-        Logger logger = Logger.getLogger(InsertReviews.class.getName());
+        Logger logger = Logger.getLogger(ReviewInserter.class.getName());
 
         Configuration conf = HBaseConfiguration.create();
         HBaseAdmin hadmin = new HBaseAdmin(conf);

@@ -1,5 +1,4 @@
 apply plugin: "java"
-apply plugin: "idea"
 
 group = "com.isuraed.insight"
 version = "1.0"
