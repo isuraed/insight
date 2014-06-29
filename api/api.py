@@ -41,8 +41,7 @@ def get_review_for(product):
     if not row:
         abort(404)
     for val in row.itervalues():
-#        jsonval = json.loads(val)
-        reviews.append(val)
+        reviews.append(json.loads(val))
     reviews = sorted(reviews, key=lambda k: k['timestamp'])
     reviews = { 'reviews' : reviews }
     reviews['meta'] = { 'count' : len(row), 'responseTime' : time.time() - start }
