@@ -10,9 +10,11 @@ set job.name 'isura_remove_duplicates';
 
 reviews = load '$reviews' using PigStorage('\t') as (product_id:chararray, title:chararray, price:chararray, user_id:chararray, profile_name:chararray, helpfulness:chararray, score:int, time:long, summary:chararray, text:chararray);
 
+reviews_clean = filter reviews by user_id != 'unknown'
+
 -- Use MD5 because it's much faster to group by hash string than review text.
 -- MD5 will crash if called on an empty string.
-reviews_hashed = foreach reviews generate product_id, title, price, user_id, profile_name, helpfulness, score, time, summary, text, (text is null ? '' : MD5(text)) as text_hash;
+reviews_hashed = foreach reviews_clean generate product_id, title, price, user_id, profile_name, helpfulness, score, time, summary, text, (text is null ? '' : MD5(text)) as text_hash;
 
 reviews_grouped = group reviews_hashed by (user_id, text_hash);
 
