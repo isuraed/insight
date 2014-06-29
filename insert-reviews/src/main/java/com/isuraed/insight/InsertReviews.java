@@ -2,14 +2,18 @@ package com.isuraed.insight;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import org.json.simple.JSONArray;
@@ -26,16 +30,35 @@ public class InsertReviews {
             System.exit(1);
         }
 
+        Logger logger = Logger.getLogger(InsertReviews.class.getName());
+
+        Configuration conf = HBaseConfiguration.create();
+        HBaseAdmin hadmin = new HBaseAdmin(conf);
+        HTableDescriptor hdesc = new HTableDescriptor(args[1]);
+        HColumnDescriptor hfamily = new HColumnDescriptor("cf1");
+        hdesc.addFamily(hfamily);
+
         HTable htable = null;
         BufferedReader reader = null;
         try {
             FileSystem fs = FileSystem.get(new Configuration());
             FileStatus[] status = fs.listStatus(new Path(args[0]));
 
-            htable = new HTable(HBaseConfiguration.create(), args[1]);
+            if (hadmin.tableExists(args[1])) {
+                hadmin.disableTable(args[1]);
+                hadmin.deleteTable(args[1]);
+                logger.info("Deleted existing table " + args[1]);
+            }
+
+            hadmin.createTable(hdesc);
+            logger.info("Created table " + args[1]);
+
+            htable = new HTable(conf, hdesc.getTableName());
+            int rowCount = 0;
 
             for (int i = 0; i < status.length; i++) {
                 reader = new BufferedReader(new InputStreamReader(fs.open(status[i].getPath())));
+                logger.info("Processing HDFS file " + status[i].getPath());
 
                 String line = reader.readLine();
                 while (line != null) {
@@ -54,10 +77,15 @@ public class InsertReviews {
                         byte[] colKey = Bytes.toBytes(timestamp + "_" + userId);
                         byte[] colValue = Bytes.toBytes(jsonObj.toJSONString());
 
-                        put.add(Bytes.toBytes("cf1"), colKey, colValue);
+                        put.add(hfamily.getName(), colKey, colValue);
                     }
 
                     htable.put(put);
+                    rowCount++;
+
+                    if (rowCount % 10000 == 0) {
+                        logger.info(rowCount + " rows written");
+                    }
 
                     line = reader.readLine();
                 }
