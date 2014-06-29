@@ -35,14 +35,14 @@ def get_brand_metrics_for(brand):
 def get_review_for(product):
     start = time.time()
     table = connection.table('isura_reviews')
-    row = table.row(product)
+    # Keys are stored in lowercase in HBase for more flexible searching.
+    row = table.row(product.lower())
     reviews = []
     if not row:
         abort(404)
-    for key, val in row.iteritems():
-        jsonval = json.loads(val)
-        jsonval['product'] = product
-        reviews.append(jsonval)
+    for val in row.itervalues():
+#        jsonval = json.loads(val)
+        reviews.append(val)
     reviews = sorted(reviews, key=lambda k: k['timestamp'])
     reviews = { 'reviews' : reviews }
     reviews['meta'] = { 'count' : len(row), 'responseTime' : time.time() - start }
