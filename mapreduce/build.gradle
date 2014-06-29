@@ -23,8 +23,10 @@ sourceSets {
 }
 
 ext.hadoopVersion = "2.3.0-mr1-cdh5.0.1"
+ext.hbaseVersion = "0.96.1.1-cdh5.0.1"
 dependencies {
     provided "org.apache.hadoop:hadoop-client:${hadoopVersion}"
+    provided "org.apache.hbase:hbase-client:${hbaseVersion}"
 
     compile "com.googlecode.json-simple:json-simple:1.1.1"
 }
