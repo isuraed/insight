@@ -6,7 +6,7 @@ register 'lib/datafu-1.2.0.jar';
 
 define MD5 datafu.pig.hash.MD5();
 
-set job.name 'isura_remove_duplicates';
+set job.name 'isura_remove_duplicate_reviews';
 
 reviews = load '$reviews' using PigStorage('\t') as (product_id:chararray, title:chararray, price:chararray, user_id:chararray, profile_name:chararray, helpfulness:chararray, score:int, time:long, summary:chararray, text:chararray);
 
