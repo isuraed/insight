@@ -55,8 +55,8 @@ public class ProductIndexer {
             String title = row[1];
             title = title.toLowerCase();
 
-            // Tokenize on all non alphanumeric characters except apostrophe.
-            String[] titleWords = title.split("[^a-zA-Z0-9']+");
+            // Tokenize on all non alphanumeric characters (ignore apostrophe for now);
+            String[] titleWords = title.split("[^a-z0-9]+");
 
             // Create the reverse index.
             for (String word : titleWords) {
@@ -68,7 +68,7 @@ public class ProductIndexer {
     // The reducer simply emits the key value because mapreduce will aggregate by keyword.
     static class IndexReducer extends Reducer<Text, Text, Text, Text> {
         private static final Logger logger = Logger.getLogger(IndexReducer.class.getName());
-        private static final int PRODUCT_LIMIT = 100;
+        private static final int PRODUCT_LIMIT = 10000;
 
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
