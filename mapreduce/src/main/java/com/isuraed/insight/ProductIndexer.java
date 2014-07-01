@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
-//import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 public class ProductIndexer {
 
@@ -40,14 +40,15 @@ public class ProductIndexer {
 
     // The mapper builds the reverse index by tokenizing the title, removing stop words, and applying stemming.
     static class IndexMapper extends Mapper<LongWritable,Text,Text,Text> {
-//        private static final Logger logger = Logger.getLogger(ReviewMapper.class.getName());
+        private static final Logger logger = Logger.getLogger(IndexMapper.class.getName());
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] row = value.toString().split("\t");
 
             if (row.length != 2) {
-                throw new IOException("Invalid row in input");
+                logger.warn("Skipped row: invalid number of columns");
+                return;
             }
 
             String productId = row[0];
