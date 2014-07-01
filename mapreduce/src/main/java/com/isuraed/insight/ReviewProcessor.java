@@ -47,6 +47,7 @@ public class ReviewProcessor {
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            // TODO: Should be value.toString().split("\t", -1);
             String[] rowValues = key.toString().split("\t", -1);
 
             if (rowValues.length != 10) {
