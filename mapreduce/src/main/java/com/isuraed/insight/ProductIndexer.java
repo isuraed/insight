@@ -67,16 +67,27 @@ public class ProductIndexer {
 
     // The reducer simply emits the key value because mapreduce will aggregate by keyword.
     static class IndexReducer extends Reducer<Text, Text, Text, Text> {
+        private static final Logger logger = Logger.getLogger(IndexReducer.class.getName());
+        private static final int PRODUCT_LIMIT = 100;
 
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             StringBuilder productIds = new StringBuilder();
+            int productCount = 0;
+
             for (Text val : values) {
+                // Must be a common word or weird case of many similar products having the same title. Ignore these
+                // to avoid performance degradation during HBase import.
+                if (productCount > PRODUCT_LIMIT) {
+                    logger.info("Skipped keyword: " + key.toString() + " occurs in more than " + PRODUCT_LIMIT + " product titles");
+                    return;
+                }
                 productIds.append(val.toString());
                 productIds.append("\t");
+                productCount++;
             }
 
-            context.write(key, new Text(productIds.toString()));
+            context.write(key, new Text(productIds.toString().trim()));
         }
     }
 }
