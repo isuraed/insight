@@ -51,23 +51,24 @@ def get_review_for(product):
 
 @app.route('/api/' + API_VERSION + '/reviews/by-keyword/<string:query>', methods = ['GET'])
 def get_reviews_by_keyword(query):
+    title_table = connection.table('isura_products_by_title')
     keyword_table = connection.table('isura_products_by_keyword')
     product_table = connection.table('isura_reviews_by_product_id')
     query = query.lower()
     keywords = re.split("[^a-z0-9]+", query)
-    hits = {}
+    hits_count = {}
     for w in keywords:
         keyword_row = keyword_table.row(w)
         if keyword_row:
             for product_id in keyword_row.itervalues():
                 if product_id in hits:
-                    hits[product_id] += 1
+                    hits_count[product_id] += 1
                 else:
-                    hits[product_id] = 1
-    hits = sorted(hits.items(), key=lambda x:x[1])
-    hits = [h[0] for h in hits]
+                    hits_count[product_id] = 1
+    hits_sorted = sorted(hits_count.items(), key=lambda x:x[1])
+    hit_products = [h[0] for h in hits_sorted]
     results = {}
-    for product_id in hits:
+    for product_id in hits_products:
         product_row = product_table.row(product_id)
         if product_row:
             results[product_id] = product_row.values()
