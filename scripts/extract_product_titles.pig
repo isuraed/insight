@@ -2,9 +2,7 @@
 
 set job.name 'isura_extract_product_titles';
 
-reviews = load '$input' using PigStorage('\t') as (product_id:chararray, title:chararray, price:chararray, user_id:chararray, profile_name:chararray, helpfulness:chararray, score:int, time:long, summary:chararray, text:chararray);
-
-reviews_clean = filter reviews by user_id != 'unknown' and title != '' and text != '';
+reviews_clean = load '$input' using PigStorage('\t') as (product_id:chararray, title:chararray, price:chararray, user_id:chararray, profile_name:chararray, helpfulness:chararray, score:int, time:long, summary:chararray, text:chararray);
 
 products = foreach reviews_clean generate product_id, title;
 
