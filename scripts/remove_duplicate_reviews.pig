@@ -8,7 +8,7 @@ define MD5 datafu.pig.hash.MD5();
 
 set job.name 'isura_remove_duplicate_reviews';
 
-reviews = load '$reviews' using PigStorage('\t') as (product_id:chararray, title:chararray, price:chararray, user_id:chararray, profile_name:chararray, helpfulness:chararray, score:int, time:long, summary:chararray, text:chararray);
+reviews = load '$input' using PigStorage('\t') as (product_id:chararray, title:chararray, price:chararray, user_id:chararray, profile_name:chararray, helpfulness:chararray, score:int, time:long, summary:chararray, text:chararray);
 
 reviews_clean = filter reviews by user_id != 'unknown';
 
