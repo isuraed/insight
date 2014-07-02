@@ -15,15 +15,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import org.apache.log4j.Logger;
 
-public class ReviewsByProductTitle {
+public class ProductsByTitle {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = new Job(conf, "isura_ReviewsByProductTitle");
 
-        job.setJarByClass(ReviewsByProductTitle.class);
-        job.setMapperClass(ReviewsMapper.class);
-        job.setReducerClass(ReviewsReducer.class);
+        job.setJarByClass(ProductsByTitle.class);
+        job.setMapperClass(ProductsMapper.class);
+        job.setReducerClass(ProductsReducer.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
@@ -39,8 +39,8 @@ public class ReviewsByProductTitle {
     }
 
     // Earlier in the pipeline we already calculated the title for each productId. The mapper simply reverses the key and value.
-    static class ReviewsMapper extends Mapper<LongWritable,Text,Text,Text> {
-        private static final Logger logger = Logger.getLogger(ReviewsMapper.class.getName());
+    static class ProductsMapper extends Mapper<LongWritable,Text,Text,Text> {
+        private static final Logger logger = Logger.getLogger(ProductsMapper.class.getName());
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -66,7 +66,7 @@ public class ReviewsByProductTitle {
         }
     }
 
-    static class ReviewsReducer extends Reducer<Text, Text, Text, Text> {
+    static class ProductsReducer extends Reducer<Text, Text, Text, Text> {
 
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {

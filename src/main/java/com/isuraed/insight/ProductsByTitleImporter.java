@@ -16,7 +16,7 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.util.Bytes;
 
-public class ReviewsByProductTitleImporter {
+public class ProductsByTitleImporter {
 
     // Insert records into HBase reviews table from all files in the specified HDFS folder. Input path is the full
     // hdfs path including hostname - i.e. hdfs://hostname:9000/path/to/files.
@@ -26,7 +26,7 @@ public class ReviewsByProductTitleImporter {
             System.exit(1);
         }
 
-        Logger logger = Logger.getLogger(ReviewsByProductTitleImporter.class.getName());
+        Logger logger = Logger.getLogger(ProductsByTitleImporter.class.getName());
 
         Configuration conf = HBaseConfiguration.create();
         HBaseAdmin hadmin = new HBaseAdmin(conf);
