@@ -60,7 +60,9 @@ public class ProductIndexer {
 
             // Create the reverse index.
             for (String word : titleWords) {
-                context.write(new Text(word), new Text(productId));
+                if (word.length() > 0) {
+                    context.write(new Text(word), new Text(productId));
+                }
             }
         }
     }
