@@ -2,9 +2,10 @@
 from flask import abort, Flask, jsonify
 import happybase
 import json
+import re
 import time
 
-API_VERSION = 'v0.2'
+API_VERSION = 'v0.3'
 
 app = Flask(__name__)
 connection = happybase.Connection('54.183.87.221')
@@ -46,6 +47,33 @@ def get_review_for(product):
     reviews = { 'reviews' : reviews }
     reviews['meta'] = { 'count' : len(row), 'responseTime' : time.time() - start }
     return jsonify(reviews)
+
+
+@app.route('/api/' + API_VERSION + '/reviews/by-keyword/<string:query>', methods = ['GET'])
+def get_reviews_by_keyword(query):
+    keyword_table = connection.table('isura_products_by_keyword')
+    product_table = connection.table('isura_reviews_by_product_id')
+    query = query.lower()
+    keywords = re.split("[^a-z0-9]+", query)
+    hits = {}
+    for w in keywords:
+        keyword_row = keyword_table.row(w)
+        if keyword_row:
+            for product_id in keyword_row.itervalues():
+                if product_id in hits:
+                    hits[product_id] += 1
+                else:
+                    hits[product_id] = 1
+    hits = sorted(hits.items(), key=lambda x:x[1])
+    hits = [h[0] for h in hits]
+    results = {}
+    for product_id in hits:
+        product_row = product_table.row(product_id)
+        if product_row:
+            results[product_id] = product_row.values()
+        else:
+            raise Exception("The product_id should be in the table!")
+    return jsonify(results)
 
 
 if __name__ == '__main__':
