@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+{% block content %}
+<table class="table table-bordered">
+    <tr>
+        <th>Product</th>
+        <th>Profile Name</th>
+        <th>Rating</th>
+        <th>Review</th>
+    </tr>
+    {% for r in reviews %}
+    <tr>
+        <td>{{ r['title'] }}</td>
+        <td>{{ r['profileName'] }}</td>
+        <td>{{ r['score'] }}</td>
+        <td>{{ r['text'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
