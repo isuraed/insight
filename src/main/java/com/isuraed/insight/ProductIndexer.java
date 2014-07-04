@@ -38,7 +38,8 @@ public class ProductIndexer {
         System.exit(result ? 0 : 1);
     }
 
-    // The mapper builds the reverse index by tokenizing the title, removing stop words, and applying stemming.
+    // The mapper builds the reverse index by tokenizing the title. Don't remove stop words because titles are usually
+    // short and the extra words helps search accuracy.
     static class IndexMapper extends Mapper<LongWritable,Text,Text,Text> {
         private static final Logger logger = Logger.getLogger(IndexMapper.class.getName());
 
@@ -55,8 +56,8 @@ public class ProductIndexer {
             String title = row[1];
             title = title.toLowerCase();
 
-            // Tokenize on all non alphanumeric characters (ignore apostrophe for now);
-            String[] titleWords = title.split("[^a-z0-9]+");
+            // Tokenize on all non alphanumeric characters and apostrophes.
+            String[] titleWords = title.split("[^a-z0-9']+");
 
             // Create the reverse index.
             for (String word : titleWords) {
@@ -70,7 +71,7 @@ public class ProductIndexer {
     // The reducer simply emits the key value because mapreduce will aggregate by keyword.
     static class IndexReducer extends Reducer<Text, Text, Text, Text> {
         private static final Logger logger = Logger.getLogger(IndexReducer.class.getName());
-        private static final int PRODUCT_LIMIT = 10000;
+        private static final int PRODUCT_LIMIT = 100000;
 
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
