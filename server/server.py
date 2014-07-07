@@ -152,7 +152,7 @@ def get_index():
 def find_products(query):
     title_table = connection.table('isura_products_by_title')
     keyword_table = connection.table('isura_products_by_keyword')
-    result_limit = 25
+    result_limit = 50
     found_ids = []
 
     # Exact matches are first.
@@ -188,4 +188,4 @@ def find_products(query):
 
 
 if __name__ == '__main__':
-    app.run(debug = True, host='0.0.0.0')
+    app.run(debug = False, host='0.0.0.0', port=5000)
