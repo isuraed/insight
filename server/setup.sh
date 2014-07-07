@@ -23,3 +23,6 @@ pip install happybase
 
 sudo cp insight/server/default /etc/apache2/sites-available/
 sudo /etc/init.d/apache2 restart
+
+screen -S server
+python insight/server/server.py
