@@ -80,27 +80,50 @@ def get_reviews_for_query(query):
     return jsonify(response)
 
 
-@app.route(API_URL + 'brand_metrics', methods = ['GET'])
-def get_brand_metrics():
-    results = []
+@app.route(API_URL + 'brands/top25', methods = ['GET'])
+def get_top_brands():
+    timer.start()
     table = connection.table('isura_brand_metrics')
+    results = []
+
     for key, data in table.scan():
         entry = {}
         entry['brand'] = key
         entry['average_score'] = data['cf1:average_score']
         entry['review_count'] = data['cf1:review_count']
         results.append(entry)
-    return jsonify( { 'brand_metrics' : results } )
+
+    results_limited = [r for r in results if int(r['review_count']) >= 500]
+    results_sorted = sorted(results_limited, key=lambda k: k['average_score'], reverse=True)
+    results_sorted = results_sorted[:25]
+    timer.stop()
+    
+    response = { 'brands-top25' : results_sorted }
+    response['meta'] = { 'count' : len(results_sorted), 'responseTime' : timer.elapsed() }
+    return jsonify(response)
 
 
-@app.route(API_URL + 'brand_metrics/<string:brand>', methods = ['GET'])
-def get_brand_metrics_for(brand):
+@app.route(API_URL + 'brands/bottom25', methods = ['GET'])
+def get_bottom_brands():
+    timer.start()
     table = connection.table('isura_brand_metrics')
-    row = [r for r in table.scan() if r[0] == brand]
-    if not row:
-        abort(404)
-    return jsonify( { 'brand_metrics' : row[0] } )
+    results = []
 
+    for key, data in table.scan():
+        entry = {}
+        entry['brand'] = key
+        entry['average_score'] = data['cf1:average_score']
+        entry['review_count'] = data['cf1:review_count']
+        results.append(entry)
+
+    results_limited = [r for r in results if int(r['review_count']) >= 500]
+    results_sorted = sorted(results_limited, key=lambda k: k['average_score'])
+    results_sorted = results_sorted[:25]
+    timer.stop()
+
+    response = { 'brands-bottom25' : results_sorted }
+    response['meta'] = { 'count' : len(results_sorted), 'responseTime' : timer.elapsed() }
+    return jsonify(response)
 
 
 @app.route('/reviews/<string:product_id>', methods = ['GET'])
@@ -115,7 +138,6 @@ def get_reviews(product_id):
     meta = response['meta']
     reviews = response['reviews']
     return render_template('reviews.html', meta=meta, reviews=reviews)
-
 
 @app.route('/', methods = ['GET'])
 def get_index():
@@ -188,4 +210,4 @@ def find_products(query):
 
 
 if __name__ == '__main__':
-    app.run(debug = False, host='0.0.0.0', port=5000)
+    app.run(debug = True, host='0.0.0.0', port=5000)
