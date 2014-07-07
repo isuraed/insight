@@ -98,7 +98,7 @@ def get_top_brands():
     results_sorted = results_sorted[:25]
     timer.stop()
     
-    response = { 'brands-top25' : results_sorted }
+    response = { 'top-brands' : results_sorted }
     response['meta'] = { 'count' : len(results_sorted), 'responseTime' : timer.elapsed() }
     return jsonify(response)
 
@@ -121,7 +121,7 @@ def get_bottom_brands():
     results_sorted = results_sorted[:25]
     timer.stop()
 
-    response = { 'brands-bottom25' : results_sorted }
+    response = { 'bottom-brands' : results_sorted }
     response['meta'] = { 'count' : len(results_sorted), 'responseTime' : timer.elapsed() }
     return jsonify(response)
 
