@@ -1,0 +1,11 @@
+<VirtualHost *:80>
+    WSGIDaemonProcess server
+    WSGIScriptAlias / /home/ubuntu/insight/server/server.wsgi
+
+    <Directory /home/ubuntu/insight/server>
+        WSGIProcessGroup server 
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
+</VirtualHost>
