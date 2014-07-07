@@ -1,36 +1,86 @@
 #!flask/bin/python
 import happybase
 import json
+import random
 import re
-import time
 from collections import OrderedDict
 from flask import abort, Flask, jsonify, render_template, request
+from timer import Timer
 
-
-class Timer:
-    def __init__(self):
-        self.start_time = time.time()
-        self.stop_time = self.start_time
-
-    def start(self):
-        self.start_time = time.time()
-
-    def stop(self):
-        self.stop_time = time.time()
-
-    def elapsed_time(self):
-        return float('{:.3f}'.format(self.stop_time - self.start_time))
-
-
-API_VERSION = 'v0.3'
+API_URL = '/api/v0.3/'
 
 app = Flask(__name__)
 connection = happybase.Connection('54.183.87.221')
-
 timer = Timer()
 
+# v0.2 for backward compatibility for Kelty.
+@app.route('/api/v0.2/reviews/<string:product>', methods = ['GET'])
+def get_reviews_for_old(product):
+    timer.start()
 
-@app.route('/api/' + API_VERSION + '/brand_metrics', methods = ['GET'])
+    table = connection.table('isura_reviews')
+    row = table.row(product.lower())
+    if not row:
+        abort(404)
+
+    reviews = [json.loads(r) for r in row.itervalues()]
+    reviews = sorted(reviews, key=lambda k: k['timestamp'])
+
+    timer.stop()
+
+    response = { 'reviews' : reviews }
+    response['meta'] = { 'count' : len(row), 'responseTime' : timer.elapsed() }
+    return jsonify(response)
+
+
+@app.route(API_URL + 'reviews/id/<string:product_id>', methods = ['GET'])
+def get_reviews_for_id(product_id):
+    timer.start()
+
+    table = connection.table('isura_reviews_by_product_id')
+    row = table.row(product_id)
+    if not row:
+        abort(404)
+
+    reviews = [json.loads(r) for r in row.itervalues()]
+    reviews = sorted(reviews, key=lambda k: k['timestamp'])
+
+    timer.stop()
+
+    response = { 'reviews' : reviews }
+    response['meta'] = { 'count' : len(row), 'responseTime' : timer.elapsed() }
+    return jsonify(response)
+
+
+@app.route(API_URL + 'reviews/search/<string:query>', methods = ['GET'])
+def get_reviews_for_query(query):
+    if not query:
+        abort(404)
+
+    timer.start()
+
+    product_ids = find_products(query)
+    table = connection.table('isura_reviews_by_product_id')
+    all_reviews = []
+    review_count = 0
+
+    for pid in product_ids:
+        row = table.row(pid)
+        reviews = [json.loads(r) for r in row.itervalues()]
+        reviews = sorted(reviews, key=lambda k: k['timestamp'])
+
+        entry = { 'productId' : pid, 'count' : len(reviews), 'reviews' : reviews }
+        all_reviews.append(entry)
+        review_count += len(reviews)
+
+    timer.stop()
+
+    response = { 'reviews' : all_reviews }
+    response['meta'] = { 'productCount' : len(product_ids), 'reviewCount' : review_count, 'responseTime' : timer.elapsed() }
+    return jsonify(response)
+
+
+@app.route(API_URL + 'brand_metrics', methods = ['GET'])
 def get_brand_metrics():
     results = []
     table = connection.table('isura_brand_metrics')
@@ -43,7 +93,7 @@ def get_brand_metrics():
     return jsonify( { 'brand_metrics' : results } )
 
 
-@app.route('/api/' + API_VERSION + '/brand_metrics/<string:brand>', methods = ['GET'])
+@app.route(API_URL + 'brand_metrics/<string:brand>', methods = ['GET'])
 def get_brand_metrics_for(brand):
     table = connection.table('isura_brand_metrics')
     row = [r for r in table.scan() if r[0] == brand]
@@ -52,104 +102,64 @@ def get_brand_metrics_for(brand):
     return jsonify( { 'brand_metrics' : row[0] } )
 
 
-# v0.2 for backward compatibility for Kelty.
-@app.route('/api/v0.2/reviews/<string:product>')
-def get_reviews_for_old(product):
-    start = time.time()
-    table = connection.table('isura_reviews')
-    # Keys are stored in lowercase in HBase for more flexible searching.
-    row = table.row(product.lower())
-    reviews = []
-    if not row:
-        abort(404)
-    for val in row.itervalues():
-        reviews.append(json.loads(val))
-    reviews = sorted(reviews, key=lambda k: k['timestamp'])
-    reviews = { 'reviews' : reviews }
-    reviews['meta'] = { 'count' : len(row), 'responseTime' : time.time() - start }
-    return jsonify(reviews)
 
+@app.route('/reviews/<string:product_id>', methods = ['GET'])
+def get_reviews(product_id):
+    # Can't call the REST API directly from localhost because dev server is
+    # single threaded (causes deadlock!)
+    response = get_reviews_for_id(product_id) 
+    if response.status_code != 200:
+        abort(response.status_code)
 
-@app.route('/api/' + API_VERSION + '/reviews/id/<string:product_id>')
-def get_reviews_for_id(product_id):
-    timer.start()
-    table = connection.table('isura_reviews_by_product_id')
-    row = table.row(product_id)
-    reviews = [json.loads(r) for r in row.itervalues()]
-    reviews = sorted(reviews, key=lambda k: k['timestamp'])
-    timer.stop()
-    response = { 'reviews' : reviews }
-    response['meta'] = { 'count' : len(row), 'responseTime' : timer.elapsed_time() }
-    return jsonify(response)
-
-
-@app.route('/api/' + API_VERSION + '/reviews/search/<string:query>')
-def get_reviews_for(query):
-    if not query:
-        abort(404)
-
-    timer.start()
-    table = connection.table('isura_reviews_by_product_id')
-    product_ids = find_products(query)
-    all_reviews = []
-    review_count = 0
-    for pid in product_ids:
-        row = table.row(pid)
-        reviews = [json.loads(r) for r in row.itervalues()]
-        reviews = sorted(reviews, key=lambda k: k['timestamp'])
-        entry = { 'productId' : pid, 'count' : len(reviews), 'reviews' : reviews }
-        all_reviews.append(entry)
-        review_count += len(reviews)
-    timer.stop()
-    response = { 'reviews' : all_reviews }
-    response['meta'] = { 'productCount' : len(product_ids), 'reviewCount' : review_count, 'responseTime' : timer.elapsed_time() }
-    return jsonify(response)
-
-
-@app.route('/products/<string:product_id>', methods = ['GET'])
-def get_product_reviews(product_id):
-    product_table = connection.table('isura_reviews_by_product_id')
-    reviews_row = product_table.row(product_id)
-    reviews = [] 
-    if reviews_row:
-        for r in reviews_row.itervalues():
-            reviews.append(json.loads(r))
+    reviews = json.loads(response.data)['reviews']
     return render_template('product.html', reviews=reviews)
 
 
-@app.route('/')
+@app.route('/', methods = ['GET'])
 def get_index():
     query = request.args.get('q')
     if not query:
         return render_template('index.html')
 
-    product_table = connection.table('isura_reviews_by_product_id')
-    product_ids = find_products(query)
+    # Can't call the REST API directly from localhost because dev server is
+    # single threaded (causes deadlock!)
+    response = get_reviews_for_query(query.lower()) 
+    response = json.loads(response.data)
+    product_reviews = response['reviews']
+
     results = []
-    for pid in product_ids:
-        row = product_table.row(pid)
-        if row:
-            reviews = row.values()
-            if reviews:
-                first = json.loads(reviews[0])
-                results.append(first)
+    for prod in product_reviews:
+        count = prod['count']
+        product_id = prod['productId']
+        review = prod['reviews'][random.randrange(count)]
+        title = review['title']
+        text = review['text']
+        results.append( { 'productId' : product_id, 'title' : title, 'count' : count, 'text' : text } )
 
     return render_template('index.html', results=results)
 
-
+   
+# Returns a list of productId's that match the given query string. First look for
+# an exact match then look for partial keyword match to fill the remaining results.
+# Use the products_by_title table for exact match and products_by_keyword for the 
+# partial matches.
 def find_products(query):
     title_table = connection.table('isura_products_by_title')
     keyword_table = connection.table('isura_products_by_keyword')
     result_limit = 25
-
     found_ids = []
+
+    # Exact matches are first.
     title_row = title_table.row(query.lower())
     if title_row:
         found_ids.extend(title_row.values())
 
+    # There are enough results so skip the keyword search.
     if len(found_ids) >= result_limit:
-        return found_ids
+        return found_ids[:result_limit]
 
+    # Now try for keyword matches. Count how many products have each keyword in
+    # their title.
     keywords = re.split("[^a-z0-9']+", query.lower())
     hit_count = {}
     for kw in keywords:
@@ -161,9 +171,13 @@ def find_products(query):
                 else:
                     hit_count[pid] = 1
 
+    # Rank products by the number of query keywords in their title.
     sorted_hits = sorted(hit_count.items(), key=lambda x:x[1], reverse=True)
+    # Put the keyword results after the exact matches.
     found_ids.extend([i[0] for i in sorted_hits])
+    # Remove duplicate productId's.
     found_ids = list(OrderedDict.fromkeys(found_ids))
+
     return found_ids[:min(len(found_ids), result_limit)]
 
 

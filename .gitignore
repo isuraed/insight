@@ -4,3 +4,5 @@ build/
 # IntelliJ
 .idea/
 *.iml
+# Python
+*.pyc
