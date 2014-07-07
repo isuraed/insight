@@ -1,1 +1,22 @@
 {% extends "index.html" %}
+{% block content %}
+<p class="lead">
+    {{ meta['count'] }} products ({{ meta['responseTime'] }} seconds )
+</p>
+<table class="table table-bordered">
+    <tr>
+        <th>Product ID</th>
+        <th>Name</th>
+        <th>Number of Reviews</th>
+        <th>Review Text</th>
+    </tr>
+    {% for row in results %}
+    <tr>
+        <td><a href="reviews/{{ row['productId'] }}">{{ row['productId'] }}</a></td>
+        <td>{{ row['title'] }}</td>
+        <td>{{ row['count'] }}</td>
+        <td>{{ row['text'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

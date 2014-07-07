@@ -111,8 +111,10 @@ def get_reviews(product_id):
     if response.status_code != 200:
         abort(response.status_code)
 
-    reviews = json.loads(response.data)['reviews']
-    return render_template('product.html', reviews=reviews)
+    response = json.loads(response.data)
+    meta = response['meta']
+    reviews = response['reviews']
+    return render_template('reviews.html', meta=meta, reviews=reviews)
 
 
 @app.route('/', methods = ['GET'])
@@ -127,6 +129,10 @@ def get_index():
     response = json.loads(response.data)
     product_reviews = response['reviews']
 
+    meta = {}
+    meta['count'] = response['meta']['productCount']
+    meta['responseTime'] = response['meta']['responseTime']
+
     results = []
     for prod in product_reviews:
         count = prod['count']
@@ -136,7 +142,7 @@ def get_index():
         text = review['text']
         results.append( { 'productId' : product_id, 'title' : title, 'count' : count, 'text' : text } )
 
-    return render_template('index.html', results=results)
+    return render_template('results.html', meta=meta, results=results)
 
    
 # Returns a list of productId's that match the given query string. First look for
