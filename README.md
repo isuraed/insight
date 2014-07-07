@@ -35,4 +35,18 @@ python scripts/run_pipeline.sh
 ```
 
 ##Web App Setup
-
+1. Create an ec2 instance running Ubuntu 12.04.
+2. SSH to the ec2 instance.
+3. Install git
+```
+sudo apt-get update
+sudo apt-get install git
+```
+4. Get the code
+```
+git clone https://github.com/isuraed/insight.git
+```
+5. Run the setup script. This will install the required dependencies, setup Apache, and start the flask app inside apache2.
+```
+bash insight/server/setup.sh
+```
