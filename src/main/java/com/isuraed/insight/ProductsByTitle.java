@@ -15,6 +15,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import org.apache.log4j.Logger;
 
+// Create a mapping of title to productId. Multiple productIds for the same title is very in the data set.
 public class ProductsByTitle {
 
     public static void main(String[] args) throws Exception {
@@ -38,7 +39,7 @@ public class ProductsByTitle {
         System.exit(result ? 0 : 1);
     }
 
-    // Earlier in the pipeline we already calculated the title for each productId. The mapper simply reverses the key and value.
+    // Earlier in the pipeline the tiles were calculated for each productId. The mapper simply reverses the key and value.
     static class ProductsMapper extends Mapper<LongWritable,Text,Text,Text> {
         private static final Logger logger = Logger.getLogger(ProductsMapper.class.getName());
 

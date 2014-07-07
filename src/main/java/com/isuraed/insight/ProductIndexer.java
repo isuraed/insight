@@ -15,6 +15,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import org.apache.log4j.Logger;
 
+// Create a reverse index of productId's by the words in the title.
 public class ProductIndexer {
 
     public static void main(String[] args) throws Exception {
@@ -56,7 +57,7 @@ public class ProductIndexer {
             String title = row[1];
             title = title.toLowerCase();
 
-            // Tokenize on all non alphanumeric characters and apostrophes.
+            // Tokenize on non alphanumeric characters and apostrophes.
             String[] titleWords = title.split("[^a-z0-9']+");
 
             // Create the reverse index.
@@ -85,6 +86,7 @@ public class ProductIndexer {
                     logger.info("Skipped keyword: " + key.toString() + " occurs in more than " + PRODUCT_LIMIT + " product titles");
                     return;
                 }
+
                 productIds.append(val.toString());
                 productIds.append("\t");
                 productCount++;
