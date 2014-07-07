@@ -1,6 +1,6 @@
 #!/bin/bash
 
-screen isura
+screen -S isura-pipeline
 
 hdfs_root="isura"
 hdfs_input="$hdfs_root"/input
@@ -65,3 +65,5 @@ hadoop jar $jar_path "$package_path".ReviewsByProductIdImporter $hdfs_reviews_by
 hadoop jar $jar_path "$package_path".ProductsByTitleImporter $hdfs_products_by_title isura_products_by_title
 hadoop jar $jar_path "$package_path".ProductsByKeywordImporter $hdfs_products_by_keyword isura_products_by_keyword
 
+# Finally...Start the thrift server (and pray it doesn't die).
+hbase thrift start

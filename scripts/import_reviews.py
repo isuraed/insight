@@ -3,21 +3,9 @@ import logging
 import os
 import sys
 
-def init_logging():
-    rootlogger = logging.getLogger()
-    logformatter = logging.Formatter("%(asctime)s [%(levelname)s]  %(message)s")
+import log_helper
 
-    filehandler = logging.FileHandler("import.log")
-    filehandler.setFormatter(logformatter)
-    rootlogger.addHandler(filehandler)
-
-    consolehandler = logging.StreamHandler()
-    consolehandler.setFormatter(logformatter)
-    rootlogger.addHandler(consolehandler)
-    
-    rootlogger.setLevel(logging.DEBUG)
-
-
+# Parse the SNAP data set. Each record is 9 lines followed by a newline.
 def parse(filename):
     record = []
     infile = gzip.open(filename, 'r')
@@ -39,7 +27,7 @@ def parse(filename):
 
 
 def main():
-    init_logging()
+    log_helper.init_logging()
 
     hdfspath = sys.argv[2]
     recordcount = 0
@@ -47,6 +35,9 @@ def main():
     filename = '{0:04d}'.format(filecount)
     currfile = open(filename + '.tab', 'w')
 
+    # Write the records in tab format to a set of smaller files in HDFS.
+    # Choose smaller files so it is easier to work with a subset of the data
+    # during testing and adhoc exploration.
     for row, record in enumerate(parse(sys.argv[1])):
         if record:
             if len(record) != 10:
