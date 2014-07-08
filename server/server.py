@@ -134,6 +134,23 @@ def get_bottom_brands():
     return jsonify(response)
 
 
+@app.route('/most_reviewed', methods = ['GET'])
+def get_most_reviewed():
+    table = connection.table('isura_most_reviewed')
+    results = []
+
+    for key, data in table.scan():
+        entry = {}
+        entry['productId'] = key
+        entry['title'] = data['cf1:title']
+        entry['count'] = data['cf1:count']
+        results.append(entry)
+
+    results_sorted = sorted(results, key=lambda k: int(k['count']), reverse=True)
+    results_limited = results_sorted[:100]
+    return render_template('most_reviewed.html', results=results_limited)
+
+
 @app.route('/brands/top25', methods = ['GET'])
 def get_brands_top25():
     response = get_top_brands()
