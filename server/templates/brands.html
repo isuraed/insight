@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+{% block content %}
+<table class="table table-striped">
+    <tr>
+        <th>Rank</th>
+        <th>Brand</th>
+        <th>Number of Reviews</th>
+        <th>Average Score</th>
+    </tr>
+    {% for b in brands %}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ b['brand'] }}</td>
+        <td>{{ b['review_count'] }}</td>
+        <td>{{'%0.2f'| format(b['average_score']|float)}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

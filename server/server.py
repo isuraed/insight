@@ -126,6 +126,28 @@ def get_bottom_brands():
     return jsonify(response)
 
 
+@app.route('/brands/top25', methods = ['GET'])
+def get_brands_top25():
+    response = get_top_brands()
+    if response.status_code != 200:
+        abort(response.status_code)
+
+    response = json.loads(response.data)
+    brands = response['top-brands']
+    return render_template('brands.html', brands=brands)
+
+
+@app.route('/brands/bottom25', methods = ['GET'])
+def get_brands_bottom25():
+    response = get_bottom_brands()
+    if response.status_code != 200:
+        abort(response.status_code)
+
+    response = json.loads(response.data)
+    brands = response['bottom-brands']
+    return render_template('brands.html', brands=brands)
+
+
 @app.route('/reviews/<string:product_id>', methods = ['GET'])
 def get_reviews(product_id):
     # Can't call the REST API directly from localhost because dev server is
