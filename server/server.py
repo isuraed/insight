@@ -16,6 +16,9 @@ timer = Timer()
 # v0.2 for backward compatibility for Kelty.
 @app.route('/api/v0.2/reviews/<string:product>', methods = ['GET'])
 def get_reviews_for_old(product):
+    if not product:
+        abort(404)
+
     timer.start()
 
     table = connection.table('isura_reviews')
@@ -35,6 +38,9 @@ def get_reviews_for_old(product):
 
 @app.route(API_URL + 'reviews/id/<string:product_id>', methods = ['GET'])
 def get_reviews_for_id(product_id):
+    if not product_id:
+        abort(404)
+
     timer.start()
 
     table = connection.table('isura_reviews_by_product_id')
@@ -65,6 +71,8 @@ def get_reviews_for_query(query):
     review_count = 0
 
     for pid in product_ids:
+        if not pid: continue
+
         row = table.row(pid)
         reviews = [json.loads(r) for r in row.itervalues()]
         reviews = sorted(reviews, key=lambda k: k['timestamp'])
@@ -194,6 +202,8 @@ def get_index():
 # Use the products_by_title table for exact match and products_by_keyword for the 
 # partial matches.
 def find_products(query):
+    if not query: return
+
     title_table = connection.table('isura_products_by_title')
     keyword_table = connection.table('isura_products_by_keyword')
     result_limit = 50
@@ -213,6 +223,8 @@ def find_products(query):
     keywords = re.split("[^a-z0-9']+", query.lower())
     hit_count = {}
     for kw in keywords:
+        # Thrift dies if a blank row key is passed.
+        if not kw: continue
         keyword_row = keyword_table.row(kw)
         if keyword_row:
             for pid in keyword_row.itervalues():
